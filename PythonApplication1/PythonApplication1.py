@@ -2,26 +2,31 @@ import requests
 from datetime import datetime
 import pytz
 
-url = "https://api.sunrise-sunset.org/json?lat=41&lng=-71&date=today&formatted=0"
-response = requests.get(url)
-data = response.json()
+def get_data(lat = 41, log = -71):
+    url = "https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today&formatted=0".format(lat, log)
+    response = requests.get(url)
+    data = response.json()
+    return data
+
+def convert_utc(utc_time):
+    new_time = datetime.fromisoformat(utc_time)
+
+    fmt = '%H:%M:%S %Z'
+    est = pytz.timezone("US/Eastern")
+    print(new_time.strftime(fmt))
+
+    return new_time.astimezone(est).strftime(fmt)
 
 def get_sunrise(response):
     sunrise = response['results']['sunrise']
-    return sunrise
+    sunrise_est = convert_utc(sunrise)
+    return sunrise_est
 
 def get_sunset(response):
     sunset = response['results']['sunset']
     sunset_est = convert_utc(sunset)
     return sunset_est
 
-def convert_utc(utc_time):
-    new_time = datetime.fromisoformat(utc_time)
 
-    fmt = '%Y-%m-%dT%H:%M:%S %Z%z'
-
-    print(new_time.strfttime(fmt))
-
-    return new_time.astimezone(est).strftime(fmt)
-
-print(get_sunset(data))
+test = get_data()
+print(test['results'])
