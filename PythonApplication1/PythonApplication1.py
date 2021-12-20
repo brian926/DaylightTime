@@ -18,10 +18,11 @@ def get_coord(city_name):
 
 def convert_utc(utc_time):
     new_time = datetime.fromisoformat(utc_time)
+    print("Time before format {}".format(new_time))
 
-    fmt = '%H:%M:%S %Z'
+    fmt = '%Y-%m-%d %H:%M:%S'
     est = pytz.timezone("US/Eastern")
-    print(new_time.strftime(fmt))
+    print("Time after format {}".format(new_time.astimezone(est).strftime(fmt)))
 
     return new_time.astimezone(est).strftime(fmt)
 
@@ -36,19 +37,23 @@ def get_sunset(response):
     return sunset_est
 
 def check_time(est_time):
-    est_time = est_time.strftime('%H:%M:%S')
+    est_time = datetime.strptime(est_time, '%Y-%m-%d %H:%M:%S')
+    #est_time = est_time.strftime('%H:%M:%S')
 
-    now = datetime.now()
-    current_time = now.strftime('%H:%M:%S')
+    current_time = datetime.now()
+    #current_time = datetime.strptime(current_time, '%H:%M:%S')
 
     if est_time > current_time:
+        print("{} is greater than {}".format(est_time, current_time))
         return -1
     elif est_time < current_time:
+        print("{} is less than {}".format(est_time, current_time))
         return 1
     else:
+        print("{} is equal to {}".format(est_time, current_time))
         return 0
 
-def test_run(sr_time, ss_time):
+def compare_time(sr_time, ss_time):
     while True:
         sunrise = check_time(sr_time)
         sunset = check_time(ss_time)
@@ -56,7 +61,7 @@ def test_run(sr_time, ss_time):
         if sunrise == 0:
             print("Sunrise is now")
         elif sunrise == 1 and sunset < 1:
-            print("Sun has rised sunset is at {}".format(sunset))
+            print("Sun has rised, sunset is at {}".format(ss_time))
         elif sunrise < 1:
             print("Sun has set")
 
@@ -67,7 +72,7 @@ def run_jobs():
     info = get_data()
     sunset = get_sunset(info)
     sunrise = get_sunrise(info)
-    test_run(sunrise, sunset)
+    compare_time(sunrise, sunset)
 
 
 def test_run():
@@ -77,7 +82,7 @@ def test_run():
     data = get_data(lat, log)
     sunrise = get_sunrise(data)
     sunset = get_sunset(data)
-    test_run(sunrise, sunset)
+    print(compare_time(sunrise, sunset))
 
 
 test_run()
