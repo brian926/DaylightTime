@@ -2,12 +2,19 @@ import requests
 from datetime import datetime
 import pytz
 import schedule
+from geopy.geocoders import Nominatim
+
 
 def get_data(lat = 41, log = -71):
     url = "https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today&formatted=0".format(lat, log)
     response = requests.get(url)
     data = response.json()
     return data
+
+def get_coord(city_name):
+    gn = Nominatim(user_agent='myapplication')
+    result = gn.geocode(city_name)
+    return result.raw
 
 def convert_utc(utc_time):
     new_time = datetime.fromisoformat(utc_time)
@@ -63,8 +70,14 @@ def run_jobs():
     test_run(sunrise, sunset)
 
 
+def test_run():
+    test = get_coord("New haven, CT")
+    lat = test['lat']
+    log = test['lon']
+    data = get_data(lat, log)
+    sunrise = get_sunrise(data)
+    sunset = get_sunset(data)
+    test_run(sunrise, sunset)
 
-test = get_data()
-sunrise = get_sunrise(test)
 
-print(check_time(sunrise))
+test_run()
