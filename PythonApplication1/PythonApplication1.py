@@ -1,6 +1,7 @@
 import requests
 from datetime import datetime
 import pytz
+import schedule
 
 def get_data(lat = 41, log = -71):
     url = "https://api.sunrise-sunset.org/json?lat={}&lng={}&date=today&formatted=0".format(lat, log)
@@ -27,6 +28,43 @@ def get_sunset(response):
     sunset_est = convert_utc(sunset)
     return sunset_est
 
+def check_time(est_time):
+    est_time = est_time.strftime('%H:%M:%S')
+
+    now = datetime.now()
+    current_time = now.strftime('%H:%M:%S')
+
+    if est_time > current_time:
+        return -1
+    elif est_time < current_time:
+        return 1
+    else:
+        return 0
+
+def test_run(sr_time, ss_time):
+    while True:
+        sunrise = check_time(sr_time)
+        sunset = check_time(ss_time)
+
+        if sunrise == 0:
+            print("Sunrise is now")
+        elif sunrise == 1 and sunset < 1:
+            print("Sun has rised sunset is at {}".format(sunset))
+        elif sunrise < 1:
+            print("Sun has set")
+
+def pull_data():
+    schedule.every().day.at("02:30").do(run_jobs)
+
+def run_jobs():
+    info = get_data()
+    sunset = get_sunset(info)
+    sunrise = get_sunrise(info)
+    test_run(sunrise, sunset)
+
+
 
 test = get_data()
-print(test['results'])
+sunrise = get_sunrise(test)
+
+print(check_time(sunrise))
